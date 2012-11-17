@@ -28,7 +28,7 @@ local.properties
 # Java specific
 *.class
 
-# Package Files #
+# Package Files
 *.jar
 *.war
 *.ear
