@@ -17,9 +17,9 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 /**
- * A custom spout written to handle messages pushed over Websockets from a WS client.
+ * A spout to handle messages pushed over Websockets connections.
  * 
- * @author ck00071
+ * @author Christopher Kilding
  * @date 17/11/2012
  */
 public class WebsocketSpout extends BaseRichSpout {

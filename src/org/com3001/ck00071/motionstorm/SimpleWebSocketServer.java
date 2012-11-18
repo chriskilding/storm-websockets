@@ -14,7 +14,8 @@ import com.netiq.websocket.WebSocketServer;
  * Wrapper round the WebSocketServer class.
  * Provides a simplified WebSocketServer which hides the details.
  * 
- * @author chris
+ * @author Christopher Kilding
+ * @date 17/11/2012
  */
 public class SimpleWebSocketServer {
 
