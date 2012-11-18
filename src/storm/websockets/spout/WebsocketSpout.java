@@ -16,6 +16,7 @@ import backtype.storm.topology.base.BaseRichSpout;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
+
 /**
  * A spout to handle messages pushed over Websockets connections.
  * 
@@ -25,43 +26,29 @@ import backtype.storm.utils.Utils;
 public class WebsocketSpout extends BaseRichSpout {
 
   /** serialVersionUID */
-  private static final long serialVersionUID = 1L;
+  private static final long                     serialVersionUID = 1L;
 
   /** A WebSocket server. Don't serialize it, it'll be gone when you deserialize! */
-  private transient final SimpleWebSocketServer server = new SimpleWebSocketServer(new WSMessageListener() {
-    
-    @Override
-    public void onMessageReceived(String message) {
-      // Push message onto queue
-      // DO NOT WAIT if space not available - latency is critical
-      // if it can't do this immediately, just drop it
-      queue.offer(message);
-    }
-  });
-  
-  private SpoutOutputCollector collector;
-  
+  private transient final SimpleWebSocketServer server           = new SimpleWebSocketServer(new WSMessageListener() {
+
+                                                                   @Override
+                                                                   public void onMessageReceived(String message) {
+                                                                     // Push message onto queue
+                                                                     // DO NOT WAIT if space not available - latency is critical
+                                                                     // if it can't do this immediately, just drop it
+                                                                     WebsocketSpout.this.queue.offer(message);
+                                                                   }
+                                                                 });
+
+  /** Output collector as supplied in the open() call. */
+  private SpoutOutputCollector                  collector;
+
   /** Queue to mediate between WS server and nextTuple(). May need to be replaced with something more robust. */
-  private final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
-  
-  /**
-   * @param conf
-   * @param context
-   * @param collector
-   *
-   * @see backtype.storm.spout.ISpout#open(java.util.Map, backtype.storm.task.TopologyContext, backtype.storm.spout.SpoutOutputCollector)
-   */
-  @Override
-  public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {        
-    this.collector = collector;
-    
-    // Fire up the server
-    this.server.start(); 
-  }
+  private final BlockingQueue<String>           queue            = new LinkedBlockingQueue<String>();
 
   /**
    * THIS IS NOT GUARANTEED TO BE CALLED. Often the spout process just gets `kill`ed.
-   *
+   * 
    * @see backtype.storm.spout.ISpout#close()
    */
   @Override
@@ -76,7 +63,16 @@ public class WebsocketSpout extends BaseRichSpout {
     }
   }
 
- 
+  /**
+   * @param declarer
+   * 
+   * @see backtype.storm.topology.IComponent#declareOutputFields(backtype.storm.topology.OutputFieldsDeclarer)
+   */
+  @Override
+  public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    declarer.declare(new Fields("message"));
+  }
+
   @Override
   public void nextTuple() {
     // Pop latest thing off the queue
@@ -84,7 +80,8 @@ public class WebsocketSpout extends BaseRichSpout {
     if (nextObj == null) {
       // Silent return, and sleep to avoid spamming the CPU
       Utils.sleep(1L);
-    } else {
+    }
+    else {
       // Only emit if we actually have an object to send
       // i.e. DON'T EMIT NULLS
       this.collector.emit(new Values(nextObj));
@@ -92,12 +89,18 @@ public class WebsocketSpout extends BaseRichSpout {
   }
 
   /**
-   * @param declarer
-   *
-   * @see backtype.storm.topology.IComponent#declareOutputFields(backtype.storm.topology.OutputFieldsDeclarer)
+   * @param conf
+   * @param context
+   * @param collector
+   * 
+   * @see backtype.storm.spout.ISpout#open(java.util.Map, backtype.storm.task.TopologyContext,
+   *      backtype.storm.spout.SpoutOutputCollector)
    */
   @Override
-  public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    declarer.declare(new Fields("message")); 
+  public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
+    this.collector = collector;
+
+    // Fire up the server
+    this.server.start();
   }
 }
