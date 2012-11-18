@@ -2,7 +2,7 @@
  * WSMessageListener.java
  */
 
-package org.com3001.ck00071.motionstorm;
+package storm.websockets.spout;
 
 
 /**

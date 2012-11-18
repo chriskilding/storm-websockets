@@ -2,7 +2,7 @@
  * StormWebSocketServer.java
  */
 
-package org.com3001.ck00071.motionstorm;
+package storm.websockets.spout;
 
 import java.io.IOException;
 

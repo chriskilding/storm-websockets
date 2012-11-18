@@ -2,7 +2,7 @@
  * WebsocketSpout.java
  */
 
-package org.com3001.ck00071.motionstorm;
+package storm.websockets.spout;
 
 import java.io.IOException;
 import java.util.Map;
@@ -27,7 +27,8 @@ public class WebsocketSpout extends BaseRichSpout {
   /** serialVersionUID */
   private static final long serialVersionUID = 1L;
 
-  private final SimpleWebSocketServer server = new SimpleWebSocketServer(new WSMessageListener() {
+  /** A WebSocket server. Don't serialize it, it'll be gone when you deserialize! */
+  private transient final SimpleWebSocketServer server = new SimpleWebSocketServer(new WSMessageListener() {
     
     @Override
     public void onMessageReceived(String message) {
@@ -40,6 +41,7 @@ public class WebsocketSpout extends BaseRichSpout {
   
   private SpoutOutputCollector collector;
   
+  /** Queue to mediate between WS server and nextTuple(). May need to be replaced with something more robust. */
   private final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
   
   /**
