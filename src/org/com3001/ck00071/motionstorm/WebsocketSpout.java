@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
-import org.json.simple.JSONObject;
-
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichSpout;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 import backtype.storm.utils.Utils;
 /**
@@ -24,11 +23,14 @@ import backtype.storm.utils.Utils;
  */
 public class WebsocketSpout extends BaseRichSpout {
 
+  /** serialVersionUID */
+  private static final long serialVersionUID = 1L;
+
   private SimpleWebSocketServer server;
   
   private SpoutOutputCollector collector;
   
-  private BlockingQueue<JSONObject> queue;
+  private BlockingQueue<String> queue;
   
   /**
    * @param conf
@@ -46,7 +48,7 @@ public class WebsocketSpout extends BaseRichSpout {
         // Push message onto queue
         // DO NOT WAIT if space not available - latency is critical
         // if it can't do this immediately, just drop it
-        queue.offer(new JSONObject());
+        queue.offer(message);
       }
     };
     
@@ -59,7 +61,7 @@ public class WebsocketSpout extends BaseRichSpout {
   }
 
   /**
-   * THIS IS NOT GUARANTEED TO BE CALLED.
+   * THIS IS NOT GUARANTEED TO BE CALLED. Often the spout process just gets `kill`ed.
    *
    * @see backtype.storm.spout.ISpout#close()
    */
@@ -79,10 +81,10 @@ public class WebsocketSpout extends BaseRichSpout {
   @Override
   public void nextTuple() {
     // Pop latest thing off the queue
-    JSONObject nextObj = this.queue.poll();
+    String nextObj = this.queue.poll();
     if (nextObj == null) {
       // Silent return, and sleep to avoid spamming the CPU
-      Utils.sleep(1);
+      Utils.sleep(1L);
     } else {
       // Only emit if we actually have an object to send
       // i.e. DON'T EMIT NULLS
@@ -97,7 +99,6 @@ public class WebsocketSpout extends BaseRichSpout {
    */
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    // TODO Auto-generated method stub
-    
+    declarer.declare(new Fields("message")); 
   }
 }
