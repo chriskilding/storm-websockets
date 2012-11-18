@@ -1,14 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-    <groupId>MotionStorm</groupId>
-    <artifactId>MotionStorm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <description>A Storm topology for comparing skeleton data against a library of images.</description>
+    <description>Library to use Websockets streams as a spout in Storm.</description>
 	<packaging>jar</packaging>
 
-	<name>storm-starter</name>
-	<url>https://github.com/nathanmarz/storm-starter</url>
+	<name>storm-websockets</name>
+	<url>https://github.com/themasterchef/storm-websockets</url>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -95,4 +93,6 @@
 			</plugin>
 		</plugins>
 	</build>
+	<groupId>com.themasterchef</groupId>
+	<artifactId>storm-websockets</artifactId>
 </project>
