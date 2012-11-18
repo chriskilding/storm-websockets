@@ -7,6 +7,7 @@ package org.com3001.ck00071.motionstorm;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -26,11 +27,20 @@ public class WebsocketSpout extends BaseRichSpout {
   /** serialVersionUID */
   private static final long serialVersionUID = 1L;
 
-  private SimpleWebSocketServer server;
+  private final SimpleWebSocketServer server = new SimpleWebSocketServer(new WSMessageListener() {
+    
+    @Override
+    public void onMessageReceived(String message) {
+      // Push message onto queue
+      // DO NOT WAIT if space not available - latency is critical
+      // if it can't do this immediately, just drop it
+      queue.offer(message);
+    }
+  });
   
   private SpoutOutputCollector collector;
   
-  private BlockingQueue<String> queue;
+  private final BlockingQueue<String> queue = new LinkedBlockingQueue<String>();
   
   /**
    * @param conf
@@ -40,24 +50,11 @@ public class WebsocketSpout extends BaseRichSpout {
    * @see backtype.storm.spout.ISpout#open(java.util.Map, backtype.storm.task.TopologyContext, backtype.storm.spout.SpoutOutputCollector)
    */
   @Override
-  public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {    
-    WSMessageListener ls = new WSMessageListener() {
-      
-      @Override
-      public void onMessageReceived(String message) {
-        // Push message onto queue
-        // DO NOT WAIT if space not available - latency is critical
-        // if it can't do this immediately, just drop it
-        queue.offer(message);
-      }
-    };
-    
-    this.server = new SimpleWebSocketServer(ls);
+  public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {        
     this.collector = collector;
     
     // Fire up the server
-    this.server.start();
-        
+    this.server.start(); 
   }
 
   /**
