@@ -26,7 +26,7 @@ import backtype.storm.utils.Utils;
 public class WebsocketSpout extends BaseRichSpout {
 
   /** serialVersionUID */
-  private static final long                     serialVersionUID = 1L;
+  private static final long                     serialVersionUID = -6858503694954676815L;
 
   /** A WebSocket server. Don't serialize it, it'll be gone when you deserialize! */
   private transient final SimpleWebSocketServer server           = new SimpleWebSocketServer(new WSMessageListener() {
