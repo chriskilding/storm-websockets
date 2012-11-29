@@ -34,8 +34,6 @@ public class WebsocketSpout extends BaseRichSpout {
   /** Output collector as supplied in the open() call. */
   private SpoutOutputCollector           collector;
 
-  /** Queue to mediate between WS server and nextTuple(). May need to be replaced with something more robust. */
-  private final BlockingQueue<String>    queue            = new LinkedBlockingQueue<String>();
 
   /**
    * THIS IS NOT GUARANTEED TO BE CALLED. Often the spout process just gets `kill`ed.
@@ -67,7 +65,7 @@ public class WebsocketSpout extends BaseRichSpout {
   @Override
   public void nextTuple() {
     // Pop latest thing off the queue
-    String nextObj = this.queue.poll();
+    String nextObj = this.ws.poll();
     if (nextObj == null) {
       // Silent return, and sleep to avoid spamming the CPU
       Utils.sleep(5L);
@@ -92,7 +90,7 @@ public class WebsocketSpout extends BaseRichSpout {
     this.collector = collector;
 
     // Need to instantiate - it's transient, remember!
-    this.ws = new WebsocketQueueBroker(this.queue);
+    this.ws = new WebsocketQueueBroker(3000);
     // Fire up the server
     this.ws.start();
   }
