@@ -26,25 +26,16 @@ import backtype.storm.utils.Utils;
 public class WebsocketSpout extends BaseRichSpout {
 
   /** serialVersionUID */
-  private static final long                     serialVersionUID = -6858503694954676815L;
+  private static final long              serialVersionUID = -6858503694954676815L;
 
-  /** A WebSocket server. Don't serialize it, it'll be gone when you deserialize! */
-  private transient final SimpleWebSocketServer server           = new SimpleWebSocketServer(new WSMessageListener() {
-
-                                                                   @Override
-                                                                   public void onMessageReceived(String message) {
-                                                                     // Push message onto queue
-                                                                     // DO NOT WAIT if space not available - latency is critical
-                                                                     // if it can't do this immediately, just drop it
-                                                                     WebsocketSpout.this.queue.offer(message);
-                                                                   }
-                                                                 });
+  /** A WebSocket queue broker. Don't serialize it, it'll be gone when you deserialize! */
+  private transient WebsocketQueueBroker ws;
 
   /** Output collector as supplied in the open() call. */
-  private SpoutOutputCollector                  collector;
+  private SpoutOutputCollector           collector;
 
   /** Queue to mediate between WS server and nextTuple(). May need to be replaced with something more robust. */
-  private final BlockingQueue<String>           queue            = new LinkedBlockingQueue<String>();
+  private final BlockingQueue<String>    queue            = new LinkedBlockingQueue<String>();
 
   /**
    * THIS IS NOT GUARANTEED TO BE CALLED. Often the spout process just gets `kill`ed.
@@ -55,7 +46,7 @@ public class WebsocketSpout extends BaseRichSpout {
   public void close() {
     // Shut the show down
     try {
-      this.server.stop();
+      this.ws.stop();
     }
     catch (IOException e) {
       System.err.println("Just got an exception when I tried to stop a WS server.");
@@ -79,7 +70,7 @@ public class WebsocketSpout extends BaseRichSpout {
     String nextObj = this.queue.poll();
     if (nextObj == null) {
       // Silent return, and sleep to avoid spamming the CPU
-      Utils.sleep(1L);
+      Utils.sleep(5L);
     }
     else {
       // Only emit if we actually have an object to send
@@ -100,7 +91,9 @@ public class WebsocketSpout extends BaseRichSpout {
   public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
     this.collector = collector;
 
+    // Need to instantiate - it's transient, remember!
+    this.ws = new WebsocketQueueBroker(this.queue);
     // Fire up the server
-    this.server.start();
+    this.ws.start();
   }
 }
