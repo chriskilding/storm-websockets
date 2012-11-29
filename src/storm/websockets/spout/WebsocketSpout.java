@@ -6,8 +6,6 @@ package storm.websockets.spout;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -33,7 +31,6 @@ public class WebsocketSpout extends BaseRichSpout {
 
   /** Output collector as supplied in the open() call. */
   private SpoutOutputCollector           collector;
-
 
   /**
    * THIS IS NOT GUARANTEED TO BE CALLED. Often the spout process just gets `kill`ed.
