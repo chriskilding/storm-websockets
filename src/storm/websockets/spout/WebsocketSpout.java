@@ -27,13 +27,13 @@ public class WebsocketSpout extends BaseRichSpout {
   private static final long              serialVersionUID = -6858503694954676815L;
 
   /** A WebSocket queue broker. Don't serialize it, it'll be gone when you deserialize! */
-  private transient WebsocketQueueBroker ws;
+  private transient WebsocketQueueBroker broker;
 
   /** Output collector as supplied in the open() call. */
   private SpoutOutputCollector           collector;
 
   /**
-   * THIS IS NOT GUARANTEED TO BE CALLED. Often the spout process just gets `kill`ed.
+   * THIS IS NOT GUARANTEED TO BE CALLED. The spout process may just be `kill`ed.
    * 
    * @see backtype.storm.spout.ISpout#close()
    */
@@ -41,7 +41,7 @@ public class WebsocketSpout extends BaseRichSpout {
   public void close() {
     // Shut the show down
     try {
-      this.ws.stop();
+      this.broker.stop();
     }
     catch (IOException e) {
       System.err.println("Just got an exception when I tried to stop a WS server.");
@@ -62,7 +62,8 @@ public class WebsocketSpout extends BaseRichSpout {
   @Override
   public void nextTuple() {
     // Pop latest thing off the queue
-    String nextObj = this.ws.poll();
+    String nextObj = this.broker.poll();
+    // System.out.println(nextObj);
     if (nextObj == null) {
       // Silent return, and sleep to avoid spamming the CPU
       Utils.sleep(5L);
@@ -87,8 +88,8 @@ public class WebsocketSpout extends BaseRichSpout {
     this.collector = collector;
 
     // Need to instantiate - it's transient, remember!
-    this.ws = new WebsocketQueueBroker(3000);
+    this.broker = new WebsocketQueueBroker(3000);
     // Fire up the server
-    this.ws.start();
+    this.broker.start();
   }
 }

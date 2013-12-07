@@ -64,8 +64,17 @@ public class WebsocketQueueBroker extends WebSocketServer {
    */
   @Override
   public void onClientMessage(WebSocket conn, String message) {
-    System.out.println("WS queue broker got something");
-    this.queue.offer(message);
+    // System.out.println(message);
+    // new JSONParser().parse(message);
+    
+    // Use add(), which is faster as it does not do capacity checks
+    try {
+      this.queue.add(message);
+    }
+    catch (IllegalStateException e) {
+      System.err.println(e.getMessage());
+      // don't care
+    }
   }
 
   /**
