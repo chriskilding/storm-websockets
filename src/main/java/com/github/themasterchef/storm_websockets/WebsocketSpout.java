@@ -2,7 +2,7 @@
  * WebsocketSpout.java
  */
 
-package storm.websockets.spout;
+package com.github.themasterchef.storm_websockets;
 
 import java.io.IOException;
 import java.util.Map;

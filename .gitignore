@@ -32,3 +32,9 @@ local.properties
 *.jar
 *.war
 *.ear
+
+# Gradle bits
+.gradle
+build
+
+.DS_Store
